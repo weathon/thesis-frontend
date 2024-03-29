@@ -37,7 +37,20 @@ for i in reversed_word_map.keys():
   reversed_word_map_[int(i)] = reversed_word_map[i]
 
 
+from fastapi.staticfiles import StaticFiles
+
+from fastapi.responses import HTMLResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 app = FastAPI()
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    with open("dist/index.html","r") as f:
+      html = f.read()
+    return HTMLResponse(html, status_code=exc.status_code)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -70,7 +83,7 @@ from pydantic import BaseModel
 class Code(BaseModel):
   code:str 
 
-@app.post("/")
+@app.post("/api")
 def submit(code: Code):
     tmp = tempfile.NamedTemporaryFile()
     with open(tmp.name, "wb") as f:
@@ -79,3 +92,6 @@ def submit(code: Code):
     res = generate(torch.tensor(np.array(image.convert("RGB").resize((400,400)))).unsqueeze(0).permute(0,3,1,2).to(device).to(torch.float32))
     print(res.detach().numpy())
     return converter.decode("".join([reversed_word_map_[i] for i in res[0].numpy()])).replace("<start>","")
+
+
+app.mount("/", StaticFiles(directory="dist"), name="dist")
