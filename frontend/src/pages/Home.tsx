@@ -1,4 +1,4 @@
-import { IonButton, IonCard, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButton, IonButtons, IonCard, IonContent, IonHeader, IonModal, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import ExploreContainer from '../components/ExploreContainer';
 import './Home.css';
 import { useRef, useState } from 'react';
@@ -15,8 +15,29 @@ const Home: React.FC = () => {
     };
   }
   const file = useRef(null)
+  const [isopen, setopen] = useState(false)
+  const smiles = useRef("")
   return (
     <IonPage>
+      <IonModal isOpen={isopen} onDidDismiss={() => { setopen(false) }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons>
+              <IonButton onClick={() => {
+                setopen(false)
+              }}>Close</IonButton>
+
+            </IonButtons>
+            <IonTitle>Preview</IonTitle>
+            <IonButtons slot="end">
+            <IonButton onClick={() => {
+                window.open(`https://pubchem.ncbi.nlm.nih.gov/#query=${smiles.current}&input_type=smiles`)
+              }}>Open In Broswer</IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <iframe style={{ height: "100%" }} src={`https://pubchem.ncbi.nlm.nih.gov/#query=${smiles.current}&input_type=smiles`}></iframe>
+      </IonModal>
       <IonHeader>
         <IonToolbar>
           <IonTitle>Image Upload</IonTitle>
@@ -34,19 +55,26 @@ const Home: React.FC = () => {
             file.current.click()
           }}>
             <img src={base64}></img>
-            <div style={{ paddingTop: "40%"}} hidden={base64!=""}><p>Click here to upload</p></div>
-            
-            <input ref={file} type="file" hidden onChange={()=>
-            {
+            <div style={{ paddingTop: "40%" }} hidden={base64 != ""}><p>Click here to upload</p></div>
+
+            <input ref={file} type="file" hidden onChange={() => {
               console.log(1)
-            //@ts-ignore
+              //@ts-ignore
               getBase64(file.current.files[0])
-            }}/>
+            }} />
           </div>
         </IonCard>
-        <IonButton expand='block' onClick={()=>{
+        <IonButton expand='block' onClick={() => {
           const submitBase64 = base64.split("base64,")[1]
-          // fetch()
+          fetch("https://8000-weathon-molfrontend-py79d6lt26i.ws-us110.gitpod.io", {
+            "method": "post",
+            "headers": { "Content-Type": "application/json" },
+            "body": JSON.stringify({ "code": submitBase64 })
+          }).then(x => x.json()).then((x) => {
+            console.log(x)
+            smiles.current = x;
+            setopen(true)
+          })
         }}>Submit</IonButton>
       </IonContent>
     </IonPage>
