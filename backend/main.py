@@ -1,5 +1,5 @@
 from typing import Union
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 import torch, torchvision
 from model import * 
@@ -38,7 +38,13 @@ for i in reversed_word_map.keys():
 
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 import os
 from PIL import Image
 import tempfile
@@ -60,11 +66,15 @@ def generate(img):
   return seq 
 
 import numpy as np
+from pydantic import BaseModel
+class Code(BaseModel):
+  code:str 
+
 @app.post("/")
-def submit(code):
+def submit(code: Code):
     tmp = tempfile.NamedTemporaryFile()
     with open(tmp.name, "wb") as f:
-      f.write(base64.decodebytes(bytes(code.encode())))
+      f.write(base64.decodebytes(bytes(code.code.encode())))
     image = Image.open(tmp.name)
     res = generate(torch.tensor(np.array(image.convert("RGB").resize((400,400)))).unsqueeze(0).permute(0,3,1,2).to(device).to(torch.float32))
     print(res.detach().numpy())
