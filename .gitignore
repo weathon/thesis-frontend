@@ -1,0 +1,10 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+**/node_modules
+**/*.pt
+**/*.dict
+.git.bak/objects/85/fc920f2e901d95b99f87b0a5a6a83d8efc0b58
+.git.bak/objects/88/9905770da1f21d2a7fa470bf6895e15670a561
+.git.bak/objects/fc/3ae8a382458c440c3628ce9e7d555c5872cc0c
+.git.bak/objects/fc/tmp_obj_FmCpRH

@@ -1,0 +1,11 @@
+wandb
+deepsmiles
+yacs
+tqdm
+numpy
+torch
+torchvision
+torchaudio
+focal_loss_torch
+fastapi
+uvicorn
